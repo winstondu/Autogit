@@ -1,1 +1,9 @@
 build
+*.c
+*.ko
+*.cmd
+*.order
+*.sh
+*.o
+*.tmp*
+*.symvers
