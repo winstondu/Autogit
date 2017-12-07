@@ -24,6 +24,10 @@
 #include <linux/moduleparam.h>
 #include <linux/string.h>
 #include <linux/time.h>
+#include <linux/fs.h>
+#include <asm/segment.h>
+#include <asm/uaccess.h>
+#include <linux/buffer_head.h>
 
 #define AUTOGIT_VERSION "1.4"
 // Parameters (remote and local are required).
@@ -70,6 +74,47 @@ static int write(void) {
       call_usermodehelper_setup(argv[0], argv, envp, 0, NULL, NULL, NULL);
   if (sub_info == NULL) return -ENOMEM;
   return call_usermodehelper_exec(sub_info, UMH_WAIT_PROC);
+}
+
+struct file *file_open(const char *path, int flags, int rights) 
+{
+    struct file *filp = NULL;
+    mm_segment_t oldfs;
+    int err = 0;
+
+    oldfs = get_fs();
+    set_fs(get_ds());
+    filp = filp_open(path, flags, rights);
+    set_fs(oldfs);
+    if (IS_ERR(filp)) {
+        err = PTR_ERR(filp);
+        return NULL;
+    }
+    return filp;
+}
+
+int file_write(struct file *file, unsigned long long offset, unsigned char *data, unsigned int size) 
+{
+    mm_segment_t oldfs;
+    int ret;
+
+    oldfs = get_fs();
+    set_fs(get_ds());
+
+    ret = vfs_write(file, data, size, &offset);
+
+    set_fs(oldfs);
+    return ret;
+}
+
+static int write2(void) {
+char* filename = "/home/winston/Documents/CS3281/no";
+struct file *file = file_open(filename, O_CREAT | O_RDWR, 0644);
+void* data = "write test test test test";  //Needs to be a kernel pointer, not userspace pointer
+int pos = 0;
+file_write(file, pos, data, 20);
+filp_close(file,NULL);
+return 0;
 }
 
 static int git_init(void) {
@@ -145,6 +190,7 @@ static int git_commit(void) {
                          "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL};
   /* modify argv with variables */
   char numbuf[256];
+  numbuf[0] = '\0';  // Ensure null-terminated.
   argv[2] = local;
   int i = 50;
   sprintf(numbuf, "%d", i);
@@ -191,6 +237,7 @@ static int __init autogit_init(void) {
   t3 = git_configure_email();
   printk("git configure email gave %d", t3);
   t4 = write();
+  write2();
   printk("write gave %d", t4);
   t5 = git_add();
   printk("git add gave %d", t5);
