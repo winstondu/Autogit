@@ -31,7 +31,7 @@ static char* remote = "https://winstondu:HASH@github.com/winstondu/RemoteTest.gi
 static char* local = "/home/winston/Documents/CS3281/test/"; /* where you want to put the local file */
 static char* name = "johndoe";
 static char* email = "johndoe@anonymous.com";
-// Buffer
+// General Buffer
 static char buffer[200]= { 0 };
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("Winston Du");
@@ -58,8 +58,8 @@ static char *envp[] = {
 "HOME=/home/",
 "TERM=linux",
 "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
-char template[40] = "/bin/echo pikachu >> ";
-char filename[40] = "/michael.txt";
+char* template = "/bin/echo pikachu >> ";
+char* filename = "/michael.txt";
 /* modify argv with variables */
 buffer[0]='\0';
 strcat(buffer, template);
@@ -150,9 +150,9 @@ static char *envp[] = {
 /* modify argv with variables */
 char numbuf[256];
 argv[2] = local;
-// int i = 42;
-// sprintf(numbuf, "%d", i);
-// argv[6] = numbuf;
+int i = 50;
+sprintf(numbuf, "%d", i);
+argv[6] = numbuf;
 /* Execute process */
 sub_info = call_usermodehelper_setup( argv[0], argv, envp, GFP_ATOMIC, NULL, NULL, NULL);
 if (sub_info == NULL) return -ENOMEM;
