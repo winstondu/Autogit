@@ -26,9 +26,9 @@
 #include <linux/string.h>
 
 #define AUTOGIT_VERSION "1.4"
-// Will need to modify this
-static char* remote = "https://winstondu:HASH@github.com/winstondu/RemoteTest.git"; /* where the remote goes to */
-static char* local = "/home/winston/Documents/CS3281/test/"; /* where you want to put the local file */
+// Parameters (remote and local are required).
+static char* remote = "https://<githubusername>:<HASHtoken>@github.com/<githubusername>/<repo>.git"; /* where the remote goes to */
+static char* local = "/home/"; /* where you want to put the local file */
 static char* name = "johndoe";
 static char* email = "johndoe@anonymous.com";
 // General Buffer
@@ -181,6 +181,10 @@ static int __init autogit_init(void)
 	int t1, t2, t3, t4, t5, t6;
 	t1 = git_init();
 	printk("git init gave %d", t1);
+	if (t1 != 0){
+		printk("git init failed. Are you sure the repo you specified is valid?");
+		return 128;
+	}
 	t2 = git_configure_name();
 	printk("git configure name gave %d", t2);
 	t3 = git_configure_email();
@@ -197,7 +201,11 @@ static int __init autogit_init(void)
 
 static void __exit autogit_exit(void)
 {
-	// git_push();
+	int t7 = git_push();
+	printk("git push gave %d", t7);
+	if (t7 != 0){
+		printk("Error: make sure you have a pushable remote!")
+	}
 }
 
 module_init(autogit_init);
